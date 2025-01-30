@@ -1,30 +1,82 @@
 pipeline {
-    agent any  // Runs on the available node (Built-In Node in your case)
-
+    agent any
     environment {
-        TF_DIR = '/var/jenkins_home/workspace/1.29.25.Jenkins'  // Adjust this path for Linux
+        AWS_REGION = 'us-east-1' 
     }
-
     stages {
+        stage('Set AWS Credentials') {
+            steps {
+                withCredentials([[ 
+                    $class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'AWS Access Key' 
+                ]]) {
+                    sh '''
+                    echo "AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID"
+                    aws sts get-caller-identity
+                    '''
+                }
+            }
+        }
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/CameronLCleveland/class5.git'
+            }
+        }
+
         stage('Initialize Terraform') {
             steps {
-                sh "cd ${TF_DIR} && terraform init"  // Use sh instead of bat for Linux
+                withCredentials([[ 
+                    $class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'AWS Access Key' 
+                ]]) {
+                    sh '''
+                    export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                    export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                    terraform init
+                    '''
+                }
             }
         }
-        stage('Validate Terraform') {
-            steps {
-                sh "cd ${TF_DIR} && terraform validate"  // Use sh for Linux
-            }
-        }
+
         stage('Plan Terraform') {
             steps {
-                sh "cd ${TF_DIR} && terraform plan -out=tfplan"  // Use sh for Linux
+                withCredentials([[ 
+                    $class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'AWS Access Key' 
+                ]]) {
+                    sh '''
+                    export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                    export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                    terraform plan -out=tfplan
+                    '''
+                }
             }
         }
+
         stage('Apply Terraform') {
             steps {
-                sh "cd ${TF_DIR} && terraform apply -auto-approve"  // Use sh for Linux
+                input message: "Approve Terraform Apply?", ok: "Deploy"
+                withCredentials([[ 
+                    $class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'AWS Access Key' 
+                ]]) {
+                    sh '''
+                    export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                    export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                    terraform apply -auto-approve tfplan
+                    '''
+                }
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Terraform deployment completed successfully!'
+        }
+        failure {
+            echo 'Terraform deployment failed!'
         }
     }
 }
