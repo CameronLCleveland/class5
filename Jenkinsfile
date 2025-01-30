@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'windows' } // This assumes you have a Windows agent with the label "windows"
+    agent any  // Runs on any available Jenkins agent
 
     environment {
         TF_DIR = 'C:\\terraform\\aws\\class5'  // Windows file path (double backslashes)
