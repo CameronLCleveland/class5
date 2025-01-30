@@ -1,31 +1,32 @@
 pipeline {
-    agent any  // Runs on any available Jenkins agent
+    agent any  // Runs on the available node (Built-In Node in your case)
 
     environment {
-        TF_DIR = 'C:\\terraform\\aws\\class5'  // Windows file path (double backslashes)
+        TF_DIR = '/path/to/your/terraform/aws/class5'  // Adjust this path for Linux
     }
 
     stages {
         stage('Initialize Terraform') {
             steps {
-                bat "cd %TF_DIR% && terraform init"
+                sh "cd ${TF_DIR} && terraform init"  // Use sh instead of bat for Linux
             }
         }
         stage('Validate Terraform') {
             steps {
-                bat "cd %TF_DIR% && terraform validate"
+                sh "cd ${TF_DIR} && terraform validate"  // Use sh for Linux
             }
         }
         stage('Plan Terraform') {
             steps {
-                bat "cd %TF_DIR% && terraform plan -out=tfplan"
+                sh "cd ${TF_DIR} && terraform plan -out=tfplan"  // Use sh for Linux
             }
         }
         stage('Apply Terraform') {
             steps {
-                bat "cd %TF_DIR% && terraform apply -auto-approve"
+                sh "cd ${TF_DIR} && terraform apply -auto-approve"  // Use sh for Linux
             }
         }
     }
 }
+
 
