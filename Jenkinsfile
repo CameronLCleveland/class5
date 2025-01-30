@@ -2,7 +2,7 @@ pipeline {
     agent any  // Runs on the available node (Built-In Node in your case)
 
     environment {
-        TF_DIR = '/path/to/your/terraform/aws/class5'  // Adjust this path for Linux
+        TF_DIR = '/var/jenkins_home/workspace/1.29.25.Jenkins'  // Adjust this path for Linux
     }
 
     stages {
