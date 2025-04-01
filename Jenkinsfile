@@ -39,7 +39,7 @@ pipeline {
                         -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
                         amazon/aws-cli sts get-caller-identity
                     '''
-                    terraform init
+                    sh "terraform init"
                 }
             }
         }
@@ -56,7 +56,7 @@ pipeline {
                         -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
                         amazon/aws-cli sts get-caller-identity
                     '''
-                    terraform plan -out=tfplan
+                    sh 'terraform plan -out=tfplan'
                 }
             }
         }
@@ -74,7 +74,7 @@ pipeline {
                         -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
                         amazon/aws-cli sts get-caller-identity
                     '''
-                    terraform apply -auto-approve tfplan
+                    sh 'terraform apply -auto-approve tfplan'
                 }
             }
         }
